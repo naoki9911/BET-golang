@@ -8,18 +8,17 @@ import (
 )
 
 func TestAnd(t *testing.T) {
-	tree := And{
-		Eq{
-			NodeValue{
-				Key:   "val1",
-				Value: "1",
-			},
+	tree := BinaryOperation{
+		Op: OpAND,
+		Left: ComparisonOperation{
+			Op:    OpEq,
+			Key:   "val1",
+			Value: "1",
 		},
-		Eq{
-			NodeValue{
-				Key:   "val2",
-				Value: "2",
-			},
+		Right: ComparisonOperation{
+			Op:    OpEq,
+			Key:   "val2",
+			Value: "2",
 		},
 	}
 
@@ -39,18 +38,17 @@ func TestAnd(t *testing.T) {
 }
 
 func TestOr(t *testing.T) {
-	tree := Or{
-		Eq{
-			NodeValue{
-				Key:   "val1",
-				Value: "1",
-			},
+	tree := BinaryOperation{
+		Op: OpOR,
+		Left: ComparisonOperation{
+			Op:    OpEq,
+			Key:   "val1",
+			Value: "1",
 		},
-		Eq{
-			NodeValue{
-				Key:   "val2",
-				Value: "2",
-			},
+		Right: ComparisonOperation{
+			Op:    OpEq,
+			Key:   "val2",
+			Value: "2",
 		},
 	}
 
@@ -70,12 +68,12 @@ func TestOr(t *testing.T) {
 }
 
 func TestNot(t *testing.T) {
-	tree := Not{
-		Eq{
-			NodeValue{
-				Key:   "val1",
-				Value: "1",
-			},
+	tree := BinaryOperation{
+		Op: OpNOT,
+		Left: ComparisonOperation{
+			Op:    OpEq,
+			Key:   "val1",
+			Value: "1",
 		},
 	}
 
@@ -94,11 +92,10 @@ func TestNot(t *testing.T) {
 }
 
 func TestEq(t *testing.T) {
-	tree := Eq{
-		NodeValue{
-			Key:   "val1",
-			Value: "1",
-		},
+	tree := ComparisonOperation{
+		Op:    OpEq,
+		Key:   "val1",
+		Value: "1",
 	}
 
 	serialized, err := tree.Serialize()
@@ -117,11 +114,10 @@ func TestEq(t *testing.T) {
 }
 
 func TestEq2(t *testing.T) {
-	tree := Eq{
-		NodeValue{
-			Key:   "val1",
-			Value: 1,
-		},
+	tree := ComparisonOperation{
+		Op:    OpEq,
+		Key:   "val1",
+		Value: 1,
 	}
 
 	serialized, err := tree.Serialize()
@@ -146,11 +142,10 @@ func TestEq2(t *testing.T) {
 }
 
 func TestLt(t *testing.T) {
-	tree := Lt{
-		NodeValue{
-			Key:   "val1",
-			Value: "1",
-		},
+	tree := ComparisonOperation{
+		Op:    OpLt,
+		Key:   "val1",
+		Value: "1",
 	}
 
 	serialized, err := tree.Serialize()
@@ -169,11 +164,10 @@ func TestLt(t *testing.T) {
 }
 
 func TestLt2(t *testing.T) {
-	tree := Lt{
-		NodeValue{
-			Key:   "val1",
-			Value: 1,
-		},
+	tree := ComparisonOperation{
+		Op:    OpLt,
+		Key:   "val1",
+		Value: 1,
 	}
 
 	serialized, err := tree.Serialize()
@@ -198,11 +192,10 @@ func TestLt2(t *testing.T) {
 }
 
 func TestGt(t *testing.T) {
-	tree := Gt{
-		NodeValue{
-			Key:   "val1",
-			Value: "1",
-		},
+	tree := ComparisonOperation{
+		Op:    OpGt,
+		Key:   "val1",
+		Value: "1",
 	}
 
 	serialized, err := tree.Serialize()
@@ -221,11 +214,10 @@ func TestGt(t *testing.T) {
 }
 
 func TestGt2(t *testing.T) {
-	tree := Gt{
-		NodeValue{
-			Key:   "val1",
-			Value: 1,
-		},
+	tree := ComparisonOperation{
+		Op:    OpGt,
+		Key:   "val1",
+		Value: 1,
 	}
 
 	serialized, err := tree.Serialize()
@@ -250,18 +242,17 @@ func TestGt2(t *testing.T) {
 }
 
 func TestSerializeDeserialize(t *testing.T) {
-	tree := And{
-		Eq{
-			NodeValue{
-				Key:   "val1",
-				Value: "1",
-			},
+	tree := BinaryOperation{
+		Op: OpAND,
+		Left: ComparisonOperation{
+			Op:    OpEq,
+			Key:   "val1",
+			Value: "1",
 		},
-		Eq{
-			NodeValue{
-				Key:   "val2",
-				Value: "2",
-			},
+		Right: ComparisonOperation{
+			Op:    OpEq,
+			Key:   "val2",
+			Value: "2",
 		},
 	}
 
@@ -282,7 +273,7 @@ func TestSerializeDeserialize(t *testing.T) {
 }
 
 func TestDeserialize(t *testing.T) {
-	encodedTree := "eJyUjs9Kh0AUhc/5jUYLIZ8i2qSMO5cFLqKI6N9+0mkcshkKDVpm1gP2Qjcq3AXR7rv34xzOWY5d58d+uinaeF8GE+98XWtdHjaX+y4OJrjiIHRNaOVFkVs/TJnBDZMTezsyB9Nz7/ovAuRD5ivu/dXZPFyMjz44eVXk9npRFpDcOY2dvTbDZNf3O4BS3tTvjhuqY/vMDEy/FTMAR7JkZPJkBk1q4B+j1mBFVgA+AQAA//8="
+	encodedTree := "eJzKFGDQT88syShN0kvOz9XPS8zPzrS0NDTUd3IN0U3Pz0nMS9dzysxLLKr0L0gtSizJzM/738jMyMiPJsj4v4mBkZmRyb+AkYeBkcUnNa2EUYCBkTUoMz0DxGJg+P/kf1MJI7OjnwujMSEbnfNzCxKLMovz8xC2NjMzMgpjkWD834JkM7N3aiWIZg1LzClNBVuc879FgpHJtZCRpSwxx5CRrbikKDMvnYeZgdGQgTynIJlnhGyeEQMDAAAA//8="
 	dec, _ := base64.StdEncoding.DecodeString(encodedTree)
 	tree2, err := Deserialize(dec)
 	assert.Equal(t, nil, err)
