@@ -13,24 +13,24 @@ type Node interface {
 	Serialize() ([]byte, error)
 }
 
-type BinaryOprator string
+type BinaryOperator string
 
 const (
-	OpAND BinaryOprator = "AND"
-	OpOR                = "OR"
-	OpNOT               = "NOT"
+	OpAND BinaryOperator = "AND"
+	OpOR  BinaryOperator = "OR"
+	OpNOT BinaryOperator = "NOT"
 )
 
 type ComparisonOperator string
 
 const (
 	OpLt ComparisonOperator = "Lt"
-	OpEq                    = "Eq"
-	OpGt                    = "Gt"
+	OpEq ComparisonOperator = "Eq"
+	OpGt ComparisonOperator = "Gt"
 )
 
 type BinaryOperation struct {
-	Op          BinaryOprator
+	Op          BinaryOperator
 	Left, Right Node
 }
 
