@@ -273,9 +273,28 @@ func TestSerializeDeserialize(t *testing.T) {
 }
 
 func TestDeserialize(t *testing.T) {
-	encodedTree := "eJzKFGDQT88syShN0kvOz9XPS8zPzrS0NDTUd3IN0U3Pz0nMS9dzysxLLKr0L0gtSizJzM/738jMyMiPJsj4v4mBkZmRyb+AkYeBkcUnNa2EUYCBkTUoMz0DxGJg+P/kf1MJI7OjnwujMSEbnfNzCxKLMovz8xC2NjMzMgpjkWD834JkM7N3aiWIZg1LzClNBVuc879FgpHJtZCRpSwxx5CRrbikKDMvnYeZgdGQgTynIJlnhGyeEQMDAAAA//8="
+	encodedTree := "eJzKFGDQT88syShN0kvOz9XPS8zPzrS0NDTUd3IN0U3Pz0nMS9dzysxLLKr0L0gtSizJzM/738jMyMiPJsj4v4mBkZmRyb+AkYeBkcUnNa2EUYCBkTUoMz0DxGJg+P/4f1MxI5OaGqMxIQud83MLEosyi/PzEJY2MzMyCmORYPzfgmQxs3dqJYhmDUvMKU0F25vzv0WCkcnWlpGlLDHHkJGtuKQoMy+dh5mB0ZCBPKcgmWeEbJ4RAwMAAAD//w=="
 	dec, _ := base64.StdEncoding.DecodeString(encodedTree)
 	tree2, err := Deserialize(dec)
+	assert.Equal(t, nil, err)
+
+	p := map[string]interface{}{
+		"val1": "1",
+		"val2": "2",
+	}
+	assert.Equal(t, true, tree2.Eval(p))
+
+	p["val2"] = "3"
+	assert.Equal(t, false, tree2.Eval(p))
+}
+
+func TestParser(t *testing.T) {
+	tree, err := ParseExpr(`(val1 == "1") && !(val2 == "3")`)
+	assert.Equal(t, nil, err)
+
+	serialized, err := tree.Serialize()
+	assert.Equal(t, nil, err)
+	tree2, err := Deserialize(serialized)
 	assert.Equal(t, nil, err)
 
 	p := map[string]interface{}{

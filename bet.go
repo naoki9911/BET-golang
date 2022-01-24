@@ -4,6 +4,12 @@ import (
 	"bytes"
 	"compress/zlib"
 	"encoding/gob"
+	"go/ast"
+	"go/parser"
+	"go/token"
+	"reflect"
+	"strconv"
+	"strings"
 )
 
 const PANIC_UNMATCHED_TYPE = "unmatched_type"
@@ -16,17 +22,17 @@ type Node interface {
 type BinaryOperator string
 
 const (
-	OpAND BinaryOperator = "AND"
-	OpOR  BinaryOperator = "OR"
-	OpNOT BinaryOperator = "NOT"
+	OpAND BinaryOperator = "&&"
+	OpOR  BinaryOperator = "||"
+	OpNOT BinaryOperator = "!"
 )
 
 type ComparisonOperator string
 
 const (
-	OpLt ComparisonOperator = "Lt"
-	OpEq ComparisonOperator = "Eq"
-	OpGt ComparisonOperator = "Gt"
+	OpLt ComparisonOperator = "<"
+	OpEq ComparisonOperator = "=="
+	OpGt ComparisonOperator = ">"
 )
 
 type BinaryOperation struct {
@@ -150,4 +156,75 @@ func Deserialize(data []byte) (Node, error) {
 func registerGob() {
 	gob.Register(BinaryOperation{})
 	gob.Register(ComparisonOperation{})
+}
+
+func convertExprToBET(e ast.Expr) Node {
+	switch val_e := e.(type) {
+	case *ast.BinaryExpr:
+		return convertBinaryExprToBET(val_e)
+	case *ast.ParenExpr:
+		return convertExprToBET(val_e.X)
+	case *ast.UnaryExpr:
+		if val_e.Op.String() != string(OpNOT) {
+			panic("Unexpected Op " + val_e.Op.String())
+		}
+		return BinaryOperation{
+			Op:   OpNOT,
+			Left: convertExprToBET(val_e.X),
+		}
+	}
+	return nil
+}
+
+func convertBinaryExprToBET(a *ast.BinaryExpr) Node {
+	switch a.Op.String() {
+	case string(OpLt), string(OpGt), string(OpEq):
+		node := &ComparisonOperation{
+			Op: ComparisonOperator(a.Op.String()),
+		}
+		switch val_x := (a.X).(type) {
+		case *ast.Ident:
+			node.Key = val_x.Name
+		default:
+			panic("Unexpected type " + reflect.TypeOf(a.X).String())
+		}
+		switch val_y := (a.Y).(type) {
+		case *ast.Ident:
+			node.Value = val_y.Name
+		case *ast.BasicLit:
+			if val_y.Kind == token.INT {
+				var err error
+				node.Value, err = strconv.Atoi(val_y.Value)
+				if err != nil {
+					panic(err.Error())
+				}
+			} else if val_y.Kind == token.STRING {
+				node.Value = strings.Replace(val_y.Value, `"`, "", -1)
+			} else {
+				panic("Unexpected BasicLit Kind " + val_y.Kind.String())
+			}
+		default:
+			panic("Unexpected type " + reflect.TypeOf(a.X).String())
+		}
+
+		return node
+	case string(OpAND), string(OpOR):
+		node := BinaryOperation{
+			Op: BinaryOperator(a.Op.String()),
+		}
+		node.Left = convertExprToBET(a.X)
+		node.Right = convertExprToBET(a.Y)
+		return node
+	default:
+		panic("Unexpected Op " + a.Op.String())
+	}
+}
+
+func ParseExpr(exprStr string) (Node, error) {
+	expr, err := parser.ParseExpr(exprStr)
+	if err != nil {
+		return nil, err
+	}
+	//ast.Print(nil, expr)
+	return convertExprToBET(expr), nil
 }
