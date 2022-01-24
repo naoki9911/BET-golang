@@ -30,9 +30,10 @@ const (
 type ComparisonOperator string
 
 const (
-	OpLt ComparisonOperator = "<"
-	OpEq ComparisonOperator = "=="
-	OpGt ComparisonOperator = ">"
+	OpLt    ComparisonOperator = "<"
+	OpEq    ComparisonOperator = "=="
+	OpGt    ComparisonOperator = ">"
+	OpNotEq ComparisonOperator = "!="
 )
 
 type BinaryOperation struct {
@@ -105,6 +106,12 @@ func (n ComparisonOperation) EvalLt(p map[string]interface{}) bool {
 	return n.EvalImpl(p, cmpInt, cmpString)
 }
 
+func (n ComparisonOperation) EvalNotEq(p map[string]interface{}) bool {
+	cmpInt := func(a int, b int) bool { return a != b }
+	cmpString := func(a string, b string) bool { return a != b }
+	return n.EvalImpl(p, cmpInt, cmpString)
+}
+
 func (n ComparisonOperation) Eval(p map[string]interface{}) bool {
 	switch n.Op {
 	case OpEq:
@@ -113,9 +120,10 @@ func (n ComparisonOperation) Eval(p map[string]interface{}) bool {
 		return n.EvalGt(p)
 	case OpLt:
 		return n.EvalLt(p)
+	case OpNotEq:
+		return n.EvalNotEq(p)
 	default:
 		panic("Unknown comparison operation " + n.Op)
-
 	}
 }
 
@@ -178,7 +186,7 @@ func convertExprToBET(e ast.Expr) Node {
 
 func convertBinaryExprToBET(a *ast.BinaryExpr) Node {
 	switch a.Op.String() {
-	case string(OpLt), string(OpGt), string(OpEq):
+	case string(OpLt), string(OpGt), string(OpEq), string(OpNotEq):
 		node := &ComparisonOperation{
 			Op: ComparisonOperator(a.Op.String()),
 		}

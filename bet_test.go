@@ -241,6 +241,56 @@ func TestGt2(t *testing.T) {
 	assert.Equal(t, false, tree2.Eval(p))
 }
 
+func TestNotEq(t *testing.T) {
+	tree := ComparisonOperation{
+		Op:    OpNotEq,
+		Key:   "val1",
+		Value: "1",
+	}
+
+	serialized, err := tree.Serialize()
+	assert.Equal(t, nil, err)
+	tree2, err := Deserialize(serialized)
+	assert.Equal(t, nil, err)
+
+	p := map[string]interface{}{}
+	assert.Equal(t, false, tree2.Eval(p))
+
+	p["val1"] = "1"
+	assert.Equal(t, false, tree2.Eval(p))
+
+	p["val1"] = "2"
+	assert.Equal(t, true, tree2.Eval(p))
+}
+
+func TestNotEq2(t *testing.T) {
+	tree := ComparisonOperation{
+		Op:    OpNotEq,
+		Key:   "val1",
+		Value: 1,
+	}
+
+	serialized, err := tree.Serialize()
+	assert.Equal(t, nil, err)
+	tree2, err := Deserialize(serialized)
+	assert.Equal(t, nil, err)
+
+	p := map[string]interface{}{}
+	assert.Equal(t, false, tree2.Eval(p))
+
+	p["val1"] = 1
+	assert.Equal(t, false, tree2.Eval(p))
+
+	defer func() {
+		err := recover()
+		if err != PANIC_UNMATCHED_TYPE {
+			t.Errorf("panic %v", err)
+		}
+	}()
+	p["val1"] = "1"
+	assert.Equal(t, false, tree2.Eval(p))
+}
+
 func TestSerializeDeserialize(t *testing.T) {
 	tree := BinaryOperation{
 		Op: OpAND,
@@ -289,7 +339,7 @@ func TestDeserialize(t *testing.T) {
 }
 
 func TestParser(t *testing.T) {
-	tree, err := ParseExpr(`(val1 == "1") && !(val2 == "3")`)
+	tree, err := ParseExpr(`(val1 == "1") && (val2 != "3")`)
 	assert.Equal(t, nil, err)
 
 	serialized, err := tree.Serialize()
